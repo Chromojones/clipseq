@@ -14,6 +14,7 @@ process BEDGRAPH_STRAND_SPLIT {
     output:
     tuple val(meta), path("*.pos.bedgraph"), emit: pos_bedgraph
     tuple val(meta), path("*.neg.bedgraph"), emit: neg_bedgraph
+    tuple val(meta), path("*.negBSFinder.bedgraph"), emit: negBSFinder_bedgraph
     path "versions.yml"                     , emit: versions
 
     when:
@@ -26,6 +27,7 @@ process BEDGRAPH_STRAND_SPLIT {
     # Extract positive and negative strands (4th column > 0 and < 0)
     awk -v OFS='\t' '\$4 > 0 {print \$1, \$2, \$3, \$4}' ${bedgraph} > ${prefix}.pos.bedgraph
     awk -v OFS='\t' '\$4 < 0 {print \$1, \$2, \$3, -\$4}' ${bedgraph} > ${prefix}.neg.bedgraph
+    awk -v OFS='\t' '\$4 < 0 {print \$1, \$2, \$3, \$4}' ${bedgraph} > ${prefix}.negBSFinder.bedgraph # BSFinder requires negative values
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
@@ -38,6 +40,7 @@ process BEDGRAPH_STRAND_SPLIT {
     """
     touch ${prefix}.pos.bedgraph
     touch ${prefix}.neg.bedgraph
+    touch ${prefix}.negBSFinder.bedgraph
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
